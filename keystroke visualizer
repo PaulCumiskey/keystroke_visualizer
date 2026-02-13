@@ -1,0 +1,88 @@
+##A keystroke visualizer to showcase how a keylogger could work, written in python
+import tkinter as tk
+from datetime import datetime
+
+class KeystrokeVisualizer:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Keystroke Visualizer")
+        self.root.geometry("600x400")
+        self.root.configure(bg="#1e1e1e")
+
+        self.history = []
+
+        # Title
+        self.title_label = tk.Label(
+            root,
+            text="Keystroke Visualizer",
+            font=("Helvetica", 20, "bold"),
+            fg="white",
+            bg="#1e1e1e"
+        )
+        self.title_label.pack(pady=10)
+
+        # Current key display
+        self.key_label = tk.Label(
+            root,
+            text="Press any key...",
+            font=("Helvetica", 24),
+            fg="#00ffcc",
+            bg="#1e1e1e"
+        )
+        self.key_label.pack(pady=20)
+
+        # Modifier display
+        self.modifier_label = tk.Label(
+            root,
+            text="Modifiers: None",
+            font=("Helvetica", 14),
+            fg="#cccccc",
+            bg="#1e1e1e"
+        )
+        self.modifier_label.pack(pady=5)
+
+        # History display
+        self.history_label = tk.Label(
+            root,
+            text="History:\n",
+            font=("Courier", 12),
+            fg="#aaaaaa",
+            bg="#1e1e1e",
+            justify="left"
+        )
+        self.history_label.pack(pady=10)
+
+        # Bind key events (only works when window is focused)
+        self.root.bind("<KeyPress>", self.on_key_press)
+
+    def on_key_press(self, event):
+        key = event.keysym
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
+        # Detect modifiers
+        modifiers = []
+        if event.state & 0x0001:
+            modifiers.append("Shift")
+        if event.state & 0x0004:
+            modifiers.append("Ctrl")
+        if event.state & 0x0008:
+            modifiers.append("Alt")
+
+        modifier_text = ", ".join(modifiers) if modifiers else "None"
+
+        # Update current key display
+        self.key_label.config(text=f"Key: {key}")
+        self.modifier_label.config(text=f"Modifiers: {modifier_text}")
+
+        # Add to history (limit to last 10 keys)
+        entry = f"[{timestamp}] {key} ({modifier_text})"
+        self.history.append(entry)
+        self.history = self.history[-10:]
+
+        self.history_label.config(text="History:\n" + "\n".join(self.history))
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = KeystrokeVisualizer(root)
+    root.mainloop()
